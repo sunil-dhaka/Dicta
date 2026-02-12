@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="banner.svg" alt="Dicta Banner" width="100%"/>
+</p>
+
 # Dicta
 
 A modern, minimalistic Android dictation app that uses local/edge ASR (Automatic Speech Recognition) models for fully offline transcription. English-only.

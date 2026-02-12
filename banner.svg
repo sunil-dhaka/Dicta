@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 180" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="800" y2="180">
+      <stop offset="0%" stop-color="#0d1117"/>
+      <stop offset="100%" stop-color="#161b22"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="180" rx="12" fill="url(#bg)"/>
+  <rect x="0" y="0" width="4" height="180" rx="2" fill="#818cf8" opacity="0.8"/>
+  <!-- Microphone body -->
+  <rect x="98" y="58" width="24" height="38" rx="12" stroke="#c7d2fe" stroke-width="2.2" fill="none"/>
+  <!-- Microphone stand arc -->
+  <path d="M92 82 Q92 108 110 108 Q128 108 128 82" stroke="#c7d2fe" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <!-- Microphone stand -->
+  <line x1="110" y1="108" x2="110" y2="122" stroke="#c7d2fe" stroke-width="2" stroke-linecap="round"/>
+  <line x1="100" y1="122" x2="120" y2="122" stroke="#c7d2fe" stroke-width="2" stroke-linecap="round"/>
+  <!-- Sound waves becoming text dots -->
+  <path d="M134 78 Q140 72 134 66" stroke="#818cf8" stroke-width="1.5" fill="none" stroke-linecap="round" opacity="0.7"/>
+  <path d="M140 82 Q150 72 140 60" stroke="#818cf8" stroke-width="1.5" fill="none" stroke-linecap="round" opacity="0.5"/>
+  <circle cx="150" cy="68" r="1.5" fill="#818cf8" opacity="0.6"/>
+  <circle cx="154" cy="74" r="1.5" fill="#818cf8" opacity="0.4"/>
+  <circle cx="156" cy="64" r="1.5" fill="#818cf8" opacity="0.3"/>
+  <!-- Text -->
+  <text x="190" y="82" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="36" font-weight="600" fill="#e6edf3" letter-spacing="2">Dicta</text>
+  <text x="190" y="112" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" fill="#8b949e" letter-spacing="0.5">Offline Speech-to-Text</text>
+  <line x1="190" y1="122" x2="380" y2="122" stroke="#21262d" stroke-width="1"/>
+  <text x="190" y="142" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" fill="#6e7681">On-device dictation powered by edge ASR</text>
+</svg>
