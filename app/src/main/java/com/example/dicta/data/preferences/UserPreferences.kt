@@ -26,8 +26,13 @@ class UserPreferences(private val context: Context) {
     }
 
     val selectedModel: Flow<AsrModelType> = context.dataStore.data.map { preferences ->
-        val modelName = preferences[Keys.SELECTED_MODEL] ?: AsrModelType.VOSK_SMALL_EN_US.name
-        AsrModelType.valueOf(modelName)
+        val modelName = preferences[Keys.SELECTED_MODEL]
+        try {
+            if (modelName != null) AsrModelType.valueOf(modelName)
+            else AsrModelType.MOONSHINE_SMALL_STREAMING
+        } catch (_: IllegalArgumentException) {
+            AsrModelType.MOONSHINE_SMALL_STREAMING
+        }
     }
 
     val modelDownloaded: Flow<Boolean> = context.dataStore.data.map { preferences ->

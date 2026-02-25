@@ -12,8 +12,8 @@ android {
 
     defaultConfig {
         applicationId = "com.example.dicta"
-        minSdk = 26
-        targetSdk = 34  // Lowered due to Vosk library not supporting 16KB page alignment
+        minSdk = 35
+        targetSdk = 34  // Moonshine native libs not yet 16KB page-aligned
         versionCode = 1
         versionName = "1.0"
 
@@ -84,8 +84,8 @@ dependencies {
     // WorkManager
     implementation(libs.androidx.work.runtime.ktx)
 
-    // Vosk ASR
-    implementation(libs.vosk.android)
+    // Moonshine ASR
+    implementation(libs.moonshine.voice)
 
     // Accompanist Permissions
     implementation(libs.accompanist.permissions)

@@ -2,7 +2,7 @@ package com.example.dicta.di
 
 import android.content.Context
 import com.example.dicta.asr.AsrEngine
-import com.example.dicta.asr.vosk.VoskEngine
+import com.example.dicta.asr.moonshine.MoonshineEngine
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -18,5 +18,5 @@ object AsrModule {
     @Singleton
     fun provideAsrEngine(
         @ApplicationContext context: Context
-    ): AsrEngine = VoskEngine(context)
+    ): AsrEngine = MoonshineEngine(context)
 }

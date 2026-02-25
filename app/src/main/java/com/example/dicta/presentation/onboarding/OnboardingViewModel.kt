@@ -16,7 +16,7 @@ import javax.inject.Inject
 
 data class OnboardingUiState(
     val availableModels: List<AsrModel> = emptyList(),
-    val selectedModel: AsrModelType = AsrModelType.VOSK_MEDIUM_EN_US,
+    val selectedModel: AsrModelType = AsrModelType.MOONSHINE_SMALL_STREAMING,
     val downloadProgress: Float = 0f,
     val isDownloading: Boolean = false,
     val downloadError: String? = null,

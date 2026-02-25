@@ -8,7 +8,7 @@ interface AsrEngine {
     val state: StateFlow<AsrState>
     val transcriptionResults: Flow<TranscriptionResult>
 
-    suspend fun initialize(modelPath: String)
+    suspend fun initialize(modelPath: String, modelArch: Int)
     suspend fun startListening()
     suspend fun stopListening()
     fun processAudioData(audioData: ShortArray)

@@ -26,8 +26,8 @@ datastore = "1.1.1"
 # WorkManager
 workManager = "2.9.1"
 
-# Vosk ASR
-vosk = "0.3.47"
+# Moonshine ASR
+moonshineVoice = "0.0.48"
 
 # Accompanist
 accompanist = "0.34.0"
@@ -79,8 +79,8 @@ androidx-datastore-preferences = { group = "androidx.datastore", name = "datasto
 # WorkManager
 androidx-work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "workManager" }
 
-# Vosk ASR
-vosk-android = { group = "com.alphacephei", name = "vosk-android", version.ref = "vosk" }
+# Moonshine ASR
+moonshine-voice = { group = "ai.moonshine", name = "moonshine-voice", version.ref = "moonshineVoice" }
 
 # Accompanist
 accompanist-permissions = { group = "com.google.accompanist", name = "accompanist-permissions", version.ref = "accompanist" }

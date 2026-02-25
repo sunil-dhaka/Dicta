@@ -1,8 +1,7 @@
 package com.example.dicta.presentation.navigation
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -26,11 +25,13 @@ sealed class Screen(val route: String) {
 @Composable
 fun DictaNavHost(
     navController: NavHostController,
-    startDestination: String
+    startDestination: String,
+    modifier: Modifier = Modifier
 ) {
     NavHost(
         navController = navController,
-        startDestination = startDestination
+        startDestination = startDestination,
+        modifier = modifier
     ) {
         composable(Screen.Onboarding.route) {
             val viewModel: OnboardingViewModel = hiltViewModel()
@@ -46,35 +47,17 @@ fun DictaNavHost(
 
         composable(Screen.Home.route) {
             val viewModel: HomeViewModel = hiltViewModel()
-            HomeScreen(
-                viewModel = viewModel,
-                onNavigateToHistory = {
-                    navController.navigate(Screen.History.route)
-                },
-                onNavigateToSettings = {
-                    navController.navigate(Screen.Settings.route)
-                }
-            )
+            HomeScreen(viewModel = viewModel)
         }
 
         composable(Screen.History.route) {
             val viewModel: HistoryViewModel = hiltViewModel()
-            HistoryScreen(
-                viewModel = viewModel,
-                onNavigateBack = {
-                    navController.popBackStack()
-                }
-            )
+            HistoryScreen(viewModel = viewModel)
         }
 
         composable(Screen.Settings.route) {
             val viewModel: SettingsViewModel = hiltViewModel()
-            SettingsScreen(
-                viewModel = viewModel,
-                onNavigateBack = {
-                    navController.popBackStack()
-                }
-            )
+            SettingsScreen(viewModel = viewModel)
         }
     }
 }

@@ -1,10 +1,12 @@
 package com.example.dicta.domain.model
 
-enum class AsrModelType {
-    VOSK_SMALL_EN_US,
-    VOSK_MEDIUM_EN_US,
-    VOSK_LARGE_EN_US,
-    VOSK_XLARGE_EN_US
+import ai.moonshine.voice.JNI
+
+enum class AsrModelType(val archConstant: Int) {
+    MOONSHINE_TINY_STREAMING(JNI.MOONSHINE_MODEL_ARCH_TINY_STREAMING),
+    MOONSHINE_SMALL_STREAMING(JNI.MOONSHINE_MODEL_ARCH_SMALL_STREAMING),
+    MOONSHINE_MEDIUM_STREAMING(JNI.MOONSHINE_MODEL_ARCH_MEDIUM_STREAMING),
+    MOONSHINE_BASE(JNI.MOONSHINE_MODEL_ARCH_BASE)
 }
 
 data class AsrModel(
@@ -13,44 +15,55 @@ data class AsrModel(
     val description: String,
     val sizeBytes: Long,
     val downloadUrl: String,
+    val wer: String,
     val isDownloaded: Boolean = false,
     val downloadProgress: Float = 0f
 ) {
     companion object {
-        val VOSK_SMALL = AsrModel(
-            type = AsrModelType.VOSK_SMALL_EN_US,
-            displayName = "Vosk Small",
-            description = "Fast, real-time streaming. Basic accuracy.",
-            sizeBytes = 50 * 1024 * 1024L,
-            downloadUrl = "https://alphacephei.com/vosk/models/vosk-model-small-en-us-0.15.zip"
+        private const val GITHUB_RELEASE_BASE =
+            "https://github.com/sunil-dhaka/Dicta/releases/download/v2.0"
+
+        val MOONSHINE_TINY_STREAM = AsrModel(
+            type = AsrModelType.MOONSHINE_TINY_STREAMING,
+            displayName = "Tiny Streaming",
+            description = "Fastest. Good for quick notes.",
+            sizeBytes = 49 * 1024 * 1024L,
+            downloadUrl = "$GITHUB_RELEASE_BASE/moonshine-tiny-streaming-en.zip",
+            wer = "12%"
         )
 
-        val VOSK_MEDIUM = AsrModel(
-            type = AsrModelType.VOSK_MEDIUM_EN_US,
-            displayName = "Vosk Medium",
-            description = "Real-time streaming. Good accuracy.",
-            sizeBytes = 128 * 1024 * 1024L,
-            downloadUrl = "https://alphacephei.com/vosk/models/vosk-model-en-us-0.22-lgraph.zip"
+        val MOONSHINE_SMALL_STREAM = AsrModel(
+            type = AsrModelType.MOONSHINE_SMALL_STREAMING,
+            displayName = "Small Streaming",
+            description = "Best balance of speed and accuracy.",
+            sizeBytes = 158 * 1024 * 1024L,
+            downloadUrl = "$GITHUB_RELEASE_BASE/moonshine-small-streaming-en.zip",
+            wer = "7.84%"
         )
 
-        val VOSK_LARGE = AsrModel(
-            type = AsrModelType.VOSK_LARGE_EN_US,
-            displayName = "Vosk Large",
-            description = "Real-time streaming. Better accuracy.",
-            sizeBytes = 1600 * 1024 * 1024L,
-            downloadUrl = "https://alphacephei.com/vosk/models/vosk-model-en-us-0.21.zip"
+        val MOONSHINE_MEDIUM_STREAM = AsrModel(
+            type = AsrModelType.MOONSHINE_MEDIUM_STREAMING,
+            displayName = "Medium Streaming",
+            description = "Highest accuracy for real-time use.",
+            sizeBytes = 289 * 1024 * 1024L,
+            downloadUrl = "$GITHUB_RELEASE_BASE/moonshine-medium-streaming-en.zip",
+            wer = "6.65%"
         )
 
-        val VOSK_XLARGE = AsrModel(
-            type = AsrModelType.VOSK_XLARGE_EN_US,
-            displayName = "Vosk XLarge",
-            description = "Real-time streaming. Best accuracy.",
-            sizeBytes = 1800 * 1024 * 1024L,
-            downloadUrl = "https://alphacephei.com/vosk/models/vosk-model-en-us-0.22.zip"
+        val MOONSHINE_BASE_OFFLINE = AsrModel(
+            type = AsrModelType.MOONSHINE_BASE,
+            displayName = "Base (Offline)",
+            description = "Non-streaming. Best for file transcription.",
+            sizeBytes = 134 * 1024 * 1024L,
+            downloadUrl = "$GITHUB_RELEASE_BASE/moonshine-base-en.zip",
+            wer = "~10%"
         )
 
         fun getAll(): List<AsrModel> = listOf(
-            VOSK_SMALL, VOSK_MEDIUM, VOSK_LARGE, VOSK_XLARGE
+            MOONSHINE_TINY_STREAM,
+            MOONSHINE_SMALL_STREAM,
+            MOONSHINE_MEDIUM_STREAM,
+            MOONSHINE_BASE_OFFLINE
         )
 
         fun getByType(type: AsrModelType): AsrModel? = getAll().find { it.type == type }

@@ -4,12 +4,15 @@ import android.Manifest
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,21 +26,17 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Save
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Stop
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeFloatingActionButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -66,14 +65,11 @@ import com.google.accompanist.permissions.shouldShowRationale
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @Composable
 fun HomeScreen(
-    viewModel: HomeViewModel,
-    onNavigateToHistory: () -> Unit,
-    onNavigateToSettings: () -> Unit
+    viewModel: HomeViewModel
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
-
     val audioPermissionState = rememberPermissionState(Manifest.permission.RECORD_AUDIO)
 
     LaunchedEffect(uiState.error) {
@@ -92,23 +88,7 @@ fun HomeScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Dicta") },
-                actions = {
-                    IconButton(onClick = onNavigateToHistory) {
-                        Icon(
-                            imageVector = Icons.Default.History,
-                            contentDescription = "History"
-                        )
-                    }
-                    IconButton(onClick = onNavigateToSettings) {
-                        Icon(
-                            imageVector = Icons.Default.Settings,
-                            contentDescription = "Settings"
-                        )
-                    }
-                }
-            )
+            TopAppBar(title = { Text("Dicta") })
         },
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
@@ -116,112 +96,132 @@ fun HomeScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(16.dp),
+                .padding(horizontal = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Card(
+            // Transcription area
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant
-                )
+                    .weight(1f)
+                    .padding(vertical = 8.dp)
             ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp)
-                ) {
-                    val displayText = buildString {
-                        append(uiState.transcription)
-                        if (uiState.partialText.isNotBlank()) {
-                            if (isNotEmpty()) append(" ")
-                            append(uiState.partialText)
-                        }
+                val displayText = buildString {
+                    append(uiState.transcription)
+                    if (uiState.partialText.isNotBlank()) {
+                        if (isNotEmpty()) append(" ")
+                        append(uiState.partialText)
                     }
+                }
 
-                    if (displayText.isBlank()) {
+                if (displayText.isBlank()) {
+                    Column(
+                        modifier = Modifier.align(Alignment.Center),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Mic,
+                            contentDescription = null,
+                            modifier = Modifier.size(48.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
                         Text(
                             text = when (uiState.asrState) {
                                 is AsrState.Loading -> "Loading model..."
-                                is AsrState.Ready -> "Tap the microphone to start recording"
+                                is AsrState.Ready -> "Tap to start recording"
                                 is AsrState.Listening -> "Listening..."
                                 is AsrState.Error -> "Error: ${(uiState.asrState as AsrState.Error).message}"
                                 else -> "Initializing..."
                             },
-                            modifier = Modifier.align(Alignment.Center),
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             textAlign = TextAlign.Center
                         )
-                    } else {
+                    }
+                } else {
+                    SelectionContainer {
                         Column(
                             modifier = Modifier
                                 .fillMaxSize()
                                 .verticalScroll(rememberScrollState())
                         ) {
-                            Text(
-                                text = displayText,
-                                style = MaterialTheme.typography.bodyLarge
-                            )
+                            if (uiState.transcription.isNotBlank()) {
+                                Text(
+                                    text = uiState.transcription,
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
+                            }
+                            if (uiState.partialText.isNotBlank()) {
+                                Text(
+                                    text = if (uiState.transcription.isNotBlank()) " ${uiState.partialText}" else uiState.partialText,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                                )
+                            }
                         }
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalAlignment = Alignment.CenterVertically
+            // Action buttons
+            AnimatedVisibility(
+                visible = uiState.transcription.isNotBlank(),
+                enter = fadeIn(),
+                exit = fadeOut()
             ) {
-                IconButton(
-                    onClick = {
-                        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                        val clip = ClipData.newPlainText("Transcription", uiState.transcription)
-                        clipboard.setPrimaryClip(clip)
-                    },
-                    enabled = uiState.transcription.isNotBlank()
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.ContentCopy,
-                        contentDescription = "Copy"
-                    )
-                }
-
-                RecordButton(
-                    isRecording = uiState.isRecording,
-                    isEnabled = uiState.asrState == AsrState.Ready || uiState.asrState == AsrState.Listening,
-                    onClick = {
-                        if (!audioPermissionState.status.isGranted) {
-                            audioPermissionState.launchPermissionRequest()
-                        } else {
-                            viewModel.toggleRecording()
+                    FilledTonalButton(
+                        onClick = {
+                            val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                            val clip = ClipData.newPlainText("Transcription", uiState.transcription)
+                            clipboard.setPrimaryClip(clip)
                         }
+                    ) {
+                        Icon(Icons.Default.ContentCopy, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("Copy")
                     }
-                )
 
-                IconButton(
-                    onClick = { viewModel.saveRecording() },
-                    enabled = uiState.transcription.isNotBlank() && !uiState.isRecording && !uiState.isSaving
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Save,
-                        contentDescription = "Save"
-                    )
-                }
+                    FilledTonalButton(
+                        onClick = { viewModel.saveRecording() },
+                        enabled = !uiState.isRecording && !uiState.isSaving
+                    ) {
+                        Icon(Icons.Default.Save, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("Save")
+                    }
 
-                IconButton(
-                    onClick = { viewModel.clearTranscription() },
-                    enabled = uiState.transcription.isNotBlank() && !uiState.isRecording
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Delete,
-                        contentDescription = "Clear"
-                    )
+                    FilledTonalButton(
+                        onClick = { viewModel.clearTranscription() },
+                        enabled = !uiState.isRecording
+                    ) {
+                        Icon(Icons.Default.Delete, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("Clear")
+                    }
                 }
             }
+
+            // Record button
+            Spacer(modifier = Modifier.height(8.dp))
+
+            RecordButton(
+                isRecording = uiState.isRecording,
+                isEnabled = uiState.asrState == AsrState.Ready || uiState.asrState == AsrState.Listening,
+                onClick = {
+                    if (!audioPermissionState.status.isGranted) {
+                        audioPermissionState.launchPermissionRequest()
+                    } else {
+                        viewModel.toggleRecording()
+                    }
+                }
+            )
 
             if (!audioPermissionState.status.isGranted) {
                 Spacer(modifier = Modifier.height(8.dp))
@@ -235,6 +235,8 @@ fun HomeScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
+
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }

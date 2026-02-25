@@ -70,7 +70,7 @@ class HomeViewModel @Inject constructor(
             Log.d(TAG, "Selected model: $selectedModel, path: $modelPath")
 
             if (modelPath != null) {
-                asrEngine.initialize(modelPath)
+                asrEngine.initialize(modelPath, selectedModel.archConstant)
             } else {
                 Log.e(TAG, "Model path is null!")
                 _uiState.update { it.copy(error = "Model not found. Please download it first.") }

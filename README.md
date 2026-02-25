@@ -9,11 +9,11 @@ A modern, minimalistic Android dictation app that uses local/edge ASR (Automatic
 ## Features
 
 - **Fully Offline** - All speech recognition happens on-device. No internet required after model download.
-- **Real-time Streaming** - See your words transcribed as you speak.
-- **Multiple Model Options** - Choose from 4 Vosk models based on your accuracy/storage needs.
+- **Real-time Streaming** - See your words transcribed as you speak with low-latency partial results.
+- **Multiple Model Options** - Choose from 4 Moonshine models based on your accuracy/storage needs.
 - **Recording History** - Save and review past transcriptions with audio playback.
 - **Export Data** - Export all recordings as a ZIP file with JSON metadata and audio files.
-- **Modern UI** - Built with Jetpack Compose and Material3 design.
+- **Modern UI** - Built with Jetpack Compose, Material3, and Material You dynamic color.
 - **Privacy First** - Your voice data never leaves your device.
 
 ## Screenshots
@@ -24,24 +24,26 @@ A modern, minimalistic Android dictation app that uses local/edge ASR (Automatic
 
 ## Models
 
-| Model | Size | Accuracy | Best For |
-|-------|------|----------|----------|
-| **Small** | 50 MB | Basic | Quick notes, low storage devices |
-| **Medium** | 128 MB | Good | Daily use (Recommended) |
-| **Large** | 1.6 GB | Better | Important transcriptions |
-| **XLarge** | 1.8 GB | Best | Maximum accuracy |
+Dicta uses [Moonshine Voice](https://github.com/moonshine-ai/moonshine) by Useful Sensors for speech recognition.
 
-Models are downloaded on first launch. You can switch between models in Settings.
+| Model | Size (on disk) | Download | WER | Best For |
+|-------|---------------|----------|-----|----------|
+| **Tiny Streaming** | 49 MB | 32 MB | 12% | Quick notes, low storage |
+| **Small Streaming** | 158 MB | 100 MB | 7.84% | Daily use (Recommended) |
+| **Medium Streaming** | 289 MB | 192 MB | 6.65% | Maximum real-time accuracy |
+| **Base (Offline)** | 134 MB | 102 MB | ~10% | File transcription |
+
+WER = Word Error Rate (lower is better). Models are downloaded on first launch. You can switch between models in Settings.
 
 ## Tech Stack
 
 - **Language**: Kotlin
-- **UI**: Jetpack Compose + Material3
+- **UI**: Jetpack Compose + Material3 + Material You
 - **Architecture**: MVVM + Clean Architecture
 - **DI**: Hilt
 - **Database**: Room
 - **Preferences**: DataStore
-- **ASR Engine**: [Vosk](https://alphacephei.com/vosk/)
+- **ASR Engine**: [Moonshine Voice](https://github.com/moonshine-ai/moonshine) (on-device, ONNX Runtime)
 - **Audio**: Android AudioRecord API (16kHz mono)
 
 ## Project Structure
@@ -57,13 +59,15 @@ app/src/main/java/com/example/dicta/
 │   ├── model/          # Domain models
 │   └── repository/     # Repository interfaces
 ├── asr/
-│   └── vosk/           # Vosk ASR engine implementation
+│   └── moonshine/      # Moonshine ASR engine implementation
 ├── audio/              # Audio recording
 ├── presentation/
 │   ├── home/           # Main recording screen
 │   ├── history/        # Recording history
 │   ├── settings/       # Model management & export
-│   └── onboarding/     # First-launch model selection
+│   ├── onboarding/     # First-launch model selection
+│   ├── navigation/     # Nav host and screen routes
+│   └── theme/          # Material3 theme
 └── util/               # Utilities
 ```
 
@@ -71,9 +75,10 @@ app/src/main/java/com/example/dicta/
 
 ### Prerequisites
 
-- Android Studio Hedgehog or newer
+- Android Studio Ladybug or newer
 - JDK 17
-- Android SDK 34+
+- Android SDK 35+
+- Physical ARM64 device (no emulator support -- Moonshine requires ARM64)
 
 ### Build Debug APK
 
@@ -94,7 +99,7 @@ APK will be at: `app/build/outputs/apk/debug/app-debug.apk`
 1. Download the latest APK from [Releases](../../releases)
 2. Enable "Install from unknown sources" if prompted
 3. Install and open the app
-4. Select a model to download (Medium recommended)
+4. Select a model to download (Small Streaming recommended)
 5. Grant microphone permission
 6. Start dictating!
 
@@ -119,7 +124,7 @@ dicta_export_[timestamp].zip
 The `recordings.json` contains:
 ```json
 {
-  "exportedAt": "2024-01-15T10:30:00Z",
+  "exportedAt": "2025-01-15T10:30:00Z",
   "appVersion": "1.0",
   "recordingCount": 5,
   "recordings": [
@@ -128,22 +133,26 @@ The `recordings.json` contains:
       "title": "Recording - Jan 15, 10:30 AM",
       "transcription": "Your transcribed text here...",
       "durationMs": 15000,
-      "createdAt": "2024-01-15T10:30:00Z",
-      "modelUsed": "VOSK_MEDIUM_EN_US",
+      "createdAt": "2025-01-15T10:30:00Z",
+      "modelUsed": "MOONSHINE_SMALL_STREAMING",
       "audioFile": "audio_1_recording.wav"
     }
   ]
 }
 ```
 
+## Migration from v1.0
+
+Dicta v2.0 replaced the Vosk ASR engine with Moonshine Voice. See [docs/vosk-to-moonshine-migration.md](docs/vosk-to-moonshine-migration.md) for the full migration process, architectural decisions, and what changed.
+
 ## License
 
-This project is open source. The Vosk library and models are licensed under Apache 2.0.
+This project is open source. The Moonshine Voice library and models are licensed under the MIT License.
 
 ## Credits
 
-- [Vosk](https://alphacephei.com/vosk/) - Offline speech recognition toolkit
-- [Alpha Cephei](https://alphacephei.com/) - Vosk model providers
+- [Moonshine Voice](https://github.com/moonshine-ai/moonshine) - On-device speech recognition engine
+- [Useful Sensors](https://www.moonshine.ai/) - Moonshine model providers
 
 ## Contributing
 

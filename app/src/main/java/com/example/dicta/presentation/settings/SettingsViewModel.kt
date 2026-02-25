@@ -41,7 +41,7 @@ data class ModelState(
 
 data class SettingsUiState(
     val models: List<ModelState> = emptyList(),
-    val selectedModel: AsrModelType = AsrModelType.VOSK_MEDIUM_EN_US,
+    val selectedModel: AsrModelType = AsrModelType.MOONSHINE_SMALL_STREAMING,
     val downloadingModel: AsrModelType? = null,
     val downloadProgress: Float = 0f,
     val error: String? = null,

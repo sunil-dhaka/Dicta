@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Download
@@ -25,8 +24,8 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
@@ -50,8 +49,7 @@ import com.example.dicta.domain.model.AsrModelType
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
-    viewModel: SettingsViewModel,
-    onNavigateBack: () -> Unit
+    viewModel: SettingsViewModel
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -88,17 +86,7 @@ fun SettingsScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Settings") },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
-                        )
-                    }
-                }
-            )
+            TopAppBar(title = { Text("Settings") })
         },
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
@@ -117,7 +105,7 @@ fun SettingsScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "Download and manage models. Larger models are more accurate but use more storage.",
+                text = "Download and manage models. Lower WER means higher accuracy.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -149,49 +137,36 @@ fun SettingsScreen(
                     containerColor = MaterialTheme.colorScheme.surfaceVariant
                 )
             ) {
-                Column(
-                    modifier = Modifier.padding(16.dp)
-                ) {
-                    Text(
-                        text = "Export All Recordings",
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                    Text(
-                        text = "Export all recordings as a ZIP file with JSON data",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    Button(
-                        onClick = { viewModel.exportAllRecordings() },
-                        enabled = !uiState.isExporting && uiState.recordingCount > 0
-                    ) {
-                        if (uiState.isExporting) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.width(20.dp).height(20.dp),
-                                strokeWidth = 2.dp,
-                                color = MaterialTheme.colorScheme.onPrimary
-                            )
-                        } else {
-                            Icon(
-                                imageVector = Icons.Default.Share,
-                                contentDescription = null
+                ListItem(
+                    headlineContent = { Text("Export All Recordings") },
+                    supportingContent = { Text("Export as ZIP with JSON metadata") },
+                    trailingContent = {
+                        Button(
+                            onClick = { viewModel.exportAllRecordings() },
+                            enabled = !uiState.isExporting && uiState.recordingCount > 0
+                        ) {
+                            if (uiState.isExporting) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.width(20.dp).height(20.dp),
+                                    strokeWidth = 2.dp,
+                                    color = MaterialTheme.colorScheme.onPrimary
+                                )
+                            } else {
+                                Icon(Icons.Default.Share, contentDescription = null)
+                            }
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                if (uiState.recordingCount > 0)
+                                    "${uiState.recordingCount} rec."
+                                else
+                                    "None"
                             )
                         }
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            if (uiState.recordingCount > 0)
-                                "Export ${uiState.recordingCount} Recording${if (uiState.recordingCount > 1) "s" else ""}"
-                            else
-                                "No Recordings"
-                        )
                     }
-                }
+                )
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -199,35 +174,22 @@ fun SettingsScreen(
                     containerColor = MaterialTheme.colorScheme.surfaceVariant
                 )
             ) {
-                Column(
-                    modifier = Modifier.padding(16.dp)
-                ) {
-                    Text(
-                        text = "Clear All Recordings",
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                    Text(
-                        text = "Delete all saved recordings and audio files",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    OutlinedButton(
-                        onClick = { showClearDataDialog = true },
-                        colors = ButtonDefaults.outlinedButtonColors(
-                            contentColor = MaterialTheme.colorScheme.error
-                        )
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Delete,
-                            contentDescription = null
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Clear Data")
+                ListItem(
+                    headlineContent = { Text("Clear All Recordings") },
+                    supportingContent = { Text("Delete all saved recordings and audio files") },
+                    trailingContent = {
+                        OutlinedButton(
+                            onClick = { showClearDataDialog = true },
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                contentColor = MaterialTheme.colorScheme.error
+                            )
+                        ) {
+                            Icon(Icons.Default.Delete, contentDescription = null)
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text("Clear")
+                        }
                     }
-                }
+                )
             }
 
             Spacer(modifier = Modifier.height(32.dp))
@@ -351,11 +313,18 @@ private fun ModelCard(
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    Text(
-                        text = formatSize(sizeMB),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Text(
+                            text = formatSize(sizeMB),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Text(
+                            text = "WER: ${model.wer}",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
             }
 

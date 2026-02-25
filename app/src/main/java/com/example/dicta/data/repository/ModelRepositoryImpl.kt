@@ -75,25 +75,17 @@ class ModelRepositoryImpl @Inject constructor(
 
     private fun hasModelFiles(dir: File): Boolean {
         if (!dir.exists() || !dir.isDirectory) return false
-
         val files = dir.listFiles() ?: return false
-        val hasVoskFiles = files.any {
-            it.name == "am" ||
-            it.name == "conf" ||
-            it.name == "graph" ||
-            it.name == "ivector" ||
-            it.name.endsWith(".mdl")
-        }
-
-        if (hasVoskFiles) return true
-
-        for (child in files) {
-            if (child.isDirectory && hasModelFiles(child)) {
-                return true
-            }
-        }
-
-        return false
+        val fileNames = files.map { it.name }.toSet()
+        // Streaming models: 7 files including encoder.ort, decoder_kv.ort, frontend.ort
+        // Base model: 3 files including encoder_model.ort, decoder_model_merged.ort
+        val isStreaming = fileNames.containsAll(
+            listOf("encoder.ort", "decoder_kv.ort", "frontend.ort", "tokenizer.bin")
+        )
+        val isBase = fileNames.containsAll(
+            listOf("encoder_model.ort", "decoder_model_merged.ort", "tokenizer.bin")
+        )
+        return isStreaming || isBase
     }
 
     override suspend fun downloadModel(

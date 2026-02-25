@@ -1,6 +1,5 @@
 package com.example.dicta.presentation.onboarding
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,12 +16,14 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -34,6 +35,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.dicta.domain.model.AsrModel
+import com.example.dicta.domain.model.AsrModelType
 
 @Composable
 fun OnboardingScreen(
@@ -75,7 +77,7 @@ fun OnboardingScreen(
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            text = "Offline voice transcription",
+            text = "Offline voice transcription, powered by Moonshine",
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center
@@ -95,6 +97,7 @@ fun OnboardingScreen(
             ModelSelectionCard(
                 model = model,
                 isSelected = model.type == uiState.selectedModel,
+                isRecommended = model.type == AsrModelType.MOONSHINE_SMALL_STREAMING,
                 enabled = !uiState.isDownloading,
                 onSelect = { viewModel.selectModel(model.type) }
             )
@@ -150,84 +153,98 @@ fun OnboardingScreen(
 private fun ModelSelectionCard(
     model: AsrModel,
     isSelected: Boolean,
+    isRecommended: Boolean,
     enabled: Boolean,
     onSelect: () -> Unit
 ) {
     val sizeMB = model.sizeBytes / (1024 * 1024)
+    val modifier = Modifier
+        .fillMaxWidth()
+        .selectable(
+            selected = isSelected,
+            enabled = enabled,
+            role = Role.RadioButton,
+            onClick = onSelect
+        )
 
-    Card(
+    if (isRecommended) {
+        ElevatedCard(
+            modifier = modifier,
+            elevation = CardDefaults.elevatedCardElevation(
+                defaultElevation = if (isSelected) 4.dp else 2.dp
+            )
+        ) {
+            ModelCardContent(model, isSelected, isRecommended = true, enabled, sizeMB)
+        }
+    } else {
+        OutlinedCard(modifier = modifier) {
+            ModelCardContent(model, isSelected, isRecommended = false, enabled, sizeMB)
+        }
+    }
+}
+
+@Composable
+private fun ModelCardContent(
+    model: AsrModel,
+    isSelected: Boolean,
+    isRecommended: Boolean,
+    enabled: Boolean,
+    sizeMB: Long
+) {
+    Row(
         modifier = Modifier
             .fillMaxWidth()
-            .selectable(
-                selected = isSelected,
-                enabled = enabled,
-                role = Role.RadioButton,
-                onClick = onSelect
-            ),
-        colors = CardDefaults.cardColors(
-            containerColor = if (isSelected) {
-                MaterialTheme.colorScheme.primaryContainer
-            } else {
-                MaterialTheme.colorScheme.surfaceVariant
-            }
-        ),
-        border = if (isSelected) {
-            BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
-        } else {
-            null
-        }
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            RadioButton(
-                selected = isSelected,
-                onClick = null,
-                enabled = enabled
-            )
+        RadioButton(
+            selected = isSelected,
+            onClick = null,
+            enabled = enabled
+        )
 
-            Spacer(modifier = Modifier.width(12.dp))
+        Spacer(modifier = Modifier.width(12.dp))
 
-            Column(modifier = Modifier.weight(1f)) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = model.displayName,
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                    if (model.type.name.contains("MEDIUM")) {
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Card(
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.tertiary
-                            )
-                        ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = model.displayName,
+                    style = MaterialTheme.typography.titleMedium
+                )
+                if (isRecommended) {
+                    SuggestionChip(
+                        onClick = {},
+                        label = {
                             Text(
                                 text = "Recommended",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onTertiary,
-                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                style = MaterialTheme.typography.labelSmall
                             )
                         }
-                    }
+                    )
                 }
+            }
 
-                Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(4.dp))
 
-                Text(
-                    text = model.description,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+            Text(
+                text = model.description,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
 
-                Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(4.dp))
 
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(
                     text = formatSize(sizeMB),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = "WER: ${model.wer}",
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
