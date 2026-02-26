@@ -147,10 +147,36 @@ class ModelRepositoryImpl @Inject constructor(
         expectedSize: Long,
         onProgress: (Float) -> Unit
     ) {
-        val url = URL(urlString)
-        val connection = url.openConnection() as HttpURLConnection
-        connection.connectTimeout = 60_000
-        connection.readTimeout = 60_000
+        // Follow redirects manually -- GitHub release assets redirect across hosts
+        // (github.com -> objects.githubusercontent.com) which HttpURLConnection won't
+        // follow automatically.
+        var currentUrl = urlString
+        var connection: HttpURLConnection
+        var redirectCount = 0
+
+        while (true) {
+            connection = URL(currentUrl).openConnection() as HttpURLConnection
+            connection.connectTimeout = 60_000
+            connection.readTimeout = 60_000
+            connection.instanceFollowRedirects = false
+
+            val responseCode = connection.responseCode
+            if (responseCode in 301..303 || responseCode == 307 || responseCode == 308) {
+                val location = connection.getHeaderField("Location")
+                    ?: throw java.io.IOException("Redirect without Location header")
+                connection.disconnect()
+                currentUrl = location
+                redirectCount++
+                if (redirectCount > 5) throw java.io.IOException("Too many redirects")
+                continue
+            }
+
+            if (responseCode != 200) {
+                connection.disconnect()
+                throw java.io.IOException("HTTP $responseCode from $currentUrl")
+            }
+            break
+        }
 
         val actualSize = connection.contentLengthLong.takeIf { it > 0 } ?: expectedSize
 
