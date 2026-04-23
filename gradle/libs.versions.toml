@@ -27,7 +27,7 @@ datastore = "1.1.1"
 workManager = "2.9.1"
 
 # Moonshine ASR
-moonshineVoice = "0.0.48"
+moonshineVoice = "0.0.59"
 
 # Accompanist
 accompanist = "0.34.0"

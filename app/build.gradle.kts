@@ -13,9 +13,9 @@ android {
     defaultConfig {
         applicationId = "com.example.dicta"
         minSdk = 35
-        targetSdk = 34  // Moonshine native libs not yet 16KB page-aligned
-        versionCode = 1
-        versionName = "1.0"
+        targetSdk = 36
+        versionCode = 2
+        versionName = "1.0.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -43,6 +43,9 @@ android {
 
     buildFeatures {
         compose = true
+    }
+    lint {
+        disable += "Instantiatable"
     }
 }
 
