@@ -18,9 +18,25 @@ A modern, minimalistic Android dictation app that uses local/edge ASR (Automatic
 
 ## Screenshots
 
-| Home | Recording | History | Settings |
-|------|-----------|---------|----------|
-| Record and transcribe | Real-time transcription | Browse past recordings | Manage models |
+A visual walkthrough of the app.
+
+![01 Onboarding](assets/01_onboarding.png)
+*Welcome screen — pick a Moonshine model on first launch.*
+
+![02 Model selection](assets/02_model_selection.png)
+*Switching to the Tiny Streaming model (49 MB, fastest).*
+
+![03 Home](assets/03_home.png)
+*Home / Record tab — tap the mic FAB to start dictating.*
+
+![04 Recording](assets/04_recording.png)
+*Listening state — live transcription is ready, stop button is red.*
+
+![05 Settings](assets/05_settings.png)
+*Settings — manage installed models, download or delete others.*
+
+![06 History](assets/06_history.png)
+*History tab — saved transcriptions live here (empty in this session).*
 
 ## Models
 
