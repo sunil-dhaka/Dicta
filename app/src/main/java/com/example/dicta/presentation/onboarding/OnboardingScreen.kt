@@ -1,6 +1,9 @@
 package com.example.dicta.presentation.onboarding
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -11,19 +14,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material3.Button
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.Icon
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedCard
-import androidx.compose.material3.RadioButton
-import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -31,8 +29,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.dicta.domain.model.AsrModel
 import com.example.dicta.domain.model.AsrModelType
@@ -40,223 +38,179 @@ import com.example.dicta.domain.model.AsrModelType
 @Composable
 fun OnboardingScreen(
     viewModel: OnboardingViewModel,
-    onComplete: () -> Unit
+    onComplete: () -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
     LaunchedEffect(uiState.isComplete) {
-        if (uiState.isComplete) {
-            onComplete()
-        }
+        if (uiState.isComplete) onComplete()
     }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(24.dp)
+            .background(MaterialTheme.colorScheme.background)
+            .padding(horizontal = 28.dp)
             .verticalScroll(rememberScrollState()),
-        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(Modifier.height(72.dp))
 
-        Icon(
-            imageVector = Icons.Default.Mic,
-            contentDescription = null,
-            modifier = Modifier.size(64.dp),
-            tint = MaterialTheme.colorScheme.primary
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
+        // Wordmark
         Text(
-            text = "Welcome to Dicta",
-            style = MaterialTheme.typography.headlineMedium,
-            textAlign = TextAlign.Center
+            text = "Dicta",
+            style = MaterialTheme.typography.displayLarge,
+            fontWeight = FontWeight.Light,
+            color = MaterialTheme.colorScheme.onBackground,
         )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
+        Spacer(Modifier.height(10.dp))
         Text(
-            text = "Offline voice transcription, powered by Moonshine",
+            text = "Offline dictation. Your voice never leaves the device.",
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center
         )
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(Modifier.height(56.dp))
 
         Text(
-            text = "Select a speech recognition model",
-            style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.fillMaxWidth()
+            text = "CHOOSE A MODEL",
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(Modifier.height(14.dp))
+
+        HorizontalDivider(color = MaterialTheme.colorScheme.outline)
 
         uiState.availableModels.forEach { model ->
-            ModelSelectionCard(
+            ModelRow(
                 model = model,
                 isSelected = model.type == uiState.selectedModel,
                 isRecommended = model.type == AsrModelType.MOONSHINE_SMALL_STREAMING,
                 enabled = !uiState.isDownloading,
-                onSelect = { viewModel.selectModel(model.type) }
+                onSelect = { viewModel.selectModel(model.type) },
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            HorizontalDivider(color = MaterialTheme.colorScheme.outline)
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(Modifier.height(40.dp))
 
         if (uiState.isDownloading) {
-            Column(
+            val selectedModel = uiState.availableModels.find { it.type == uiState.selectedModel }
+            val downloadedMB = (uiState.downloadProgress * (selectedModel?.sizeBytes ?: 0) / (1024 * 1024)).toInt()
+            val totalMB = ((selectedModel?.sizeBytes ?: 0) / (1024 * 1024)).toInt()
+
+            LinearProgressIndicator(
+                progress = { uiState.downloadProgress },
                 modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                LinearProgressIndicator(
-                    progress = { uiState.downloadProgress },
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                val selectedModel = uiState.availableModels.find { it.type == uiState.selectedModel }
-                val downloadedMB = (uiState.downloadProgress * (selectedModel?.sizeBytes ?: 0) / (1024 * 1024)).toInt()
-                val totalMB = ((selectedModel?.sizeBytes ?: 0) / (1024 * 1024)).toInt()
-
-                Text(
-                    text = "Downloading... $downloadedMB / $totalMB MB",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
+                color = MaterialTheme.colorScheme.onBackground,
+                trackColor = MaterialTheme.colorScheme.outline,
+            )
+            Spacer(Modifier.height(10.dp))
+            Text(
+                text = "Downloading $downloadedMB of $totalMB MB",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         } else {
             Button(
                 onClick = { viewModel.downloadSelectedModel() },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(52.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.onBackground,
+                    contentColor = MaterialTheme.colorScheme.background,
+                ),
             ) {
-                Text("Download & Continue")
+                Text(
+                    text = "Download & Continue",
+                    style = MaterialTheme.typography.titleMedium,
+                )
             }
         }
 
         uiState.downloadError?.let { error ->
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(Modifier.height(16.dp))
             Text(
                 text = error,
                 color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodyMedium
+                style = MaterialTheme.typography.bodyMedium,
             )
         }
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(Modifier.height(40.dp))
     }
 }
 
 @Composable
-private fun ModelSelectionCard(
+private fun ModelRow(
     model: AsrModel,
     isSelected: Boolean,
     isRecommended: Boolean,
     enabled: Boolean,
-    onSelect: () -> Unit
+    onSelect: () -> Unit,
 ) {
     val sizeMB = model.sizeBytes / (1024 * 1024)
-    val modifier = Modifier
-        .fillMaxWidth()
-        .selectable(
-            selected = isSelected,
-            enabled = enabled,
-            role = Role.RadioButton,
-            onClick = onSelect
-        )
+    val sizeStr = if (sizeMB >= 1024) String.format("%.1f GB", sizeMB / 1024.0) else "$sizeMB MB"
 
-    if (isRecommended) {
-        ElevatedCard(
-            modifier = modifier,
-            elevation = CardDefaults.elevatedCardElevation(
-                defaultElevation = if (isSelected) 4.dp else 2.dp
-            )
-        ) {
-            ModelCardContent(model, isSelected, isRecommended = true, enabled, sizeMB)
-        }
-    } else {
-        OutlinedCard(modifier = modifier) {
-            ModelCardContent(model, isSelected, isRecommended = false, enabled, sizeMB)
-        }
-    }
-}
-
-@Composable
-private fun ModelCardContent(
-    model: AsrModel,
-    isSelected: Boolean,
-    isRecommended: Boolean,
-    enabled: Boolean,
-    sizeMB: Long
-) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .clickable(enabled = enabled, onClick = onSelect)
+            .padding(vertical = 18.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        RadioButton(
-            selected = isSelected,
-            onClick = null,
-            enabled = enabled
+        // Selection dot — simple filled circle, no ring chrome.
+        Box(
+            modifier = Modifier
+                .size(10.dp)
+                .clip(CircleShape)
+                .background(
+                    if (isSelected) MaterialTheme.colorScheme.onBackground
+                    else MaterialTheme.colorScheme.outline
+                ),
         )
 
-        Spacer(modifier = Modifier.width(12.dp))
+        Spacer(Modifier.width(16.dp))
 
         Column(modifier = Modifier.weight(1f)) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     text = model.displayName,
-                    style = MaterialTheme.typography.titleMedium
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onBackground,
                 )
                 if (isRecommended) {
-                    SuggestionChip(
-                        onClick = {},
-                        label = {
-                            Text(
-                                text = "Recommended",
-                                style = MaterialTheme.typography.labelSmall
-                            )
-                        }
+                    Spacer(Modifier.width(10.dp))
+                    Text(
+                        text = "RECOMMENDED",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.tertiary,
                     )
                 }
             }
-
-            Spacer(modifier = Modifier.height(4.dp))
-
+            Spacer(Modifier.height(4.dp))
             Text(
                 text = model.description,
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text(
-                    text = formatSize(sizeMB),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Text(
-                    text = "WER: ${model.wer}",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
         }
-    }
-}
 
-private fun formatSize(sizeMB: Long): String {
-    return if (sizeMB >= 1024) {
-        String.format("%.1f GB", sizeMB / 1024.0)
-    } else {
-        "$sizeMB MB"
+        Spacer(Modifier.width(12.dp))
+
+        Column(horizontalAlignment = Alignment.End) {
+            Text(
+                text = sizeStr,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onBackground,
+            )
+            Text(
+                text = "WER ${model.wer}",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
     }
 }
